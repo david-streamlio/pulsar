@@ -103,8 +103,13 @@ public class KeyManagerProxy extends X509ExtendedKeyManager {
             KeyStore selectedKeyStore;
             try {
                 selectedKeyStore = KeyStore.getInstance("JKS");
-            } catch (KeyStoreException e) {
-                selectedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            } catch (KeyStoreException jksError) {
+                try {
+                    selectedKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                } catch (KeyStoreException defaultError) {
+                    defaultError.addSuppressed(jksError);
+                    throw defaultError;
+                }
             }
             keyStore = selectedKeyStore;
             final String alias = certificateList.get(0).getSubjectX500Principal().getName();
